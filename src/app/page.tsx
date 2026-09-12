@@ -1,69 +1,59 @@
-import Image from "next/image";
+import { desc, eq } from "drizzle-orm";
+import { db } from "@/db/client";
+import { songs } from "@/db/schema";
+import { getTrackMetadata } from "@/lib/spotify";
+import { StudioShell } from "./_components/StudioShell";
+import { SongListSidebar } from "./_components/SongListSidebar";
+import { SongDetailPane } from "./_components/SongDetailPane";
 
-export default function Home() {
+// Always show the latest published songs, no caching.
+export const dynamic = "force-dynamic";
+
+export default async function HomePage({
+  searchParams,
+}: {
+  searchParams: Promise<Record<string, string | string[] | undefined>>;
+}) {
+  // Column-projected: the sidebar only ever needs enough to render a row, never the
+  // full notes/tuning JSON blobs -- those are fetched once, below, for just the
+  // selected song. Ordered newest-first so "first in the list" is a stable, meaningful
+  // default.
+  const list = await db
+    .select({ id: songs.id, title: songs.title, artist: songs.artist, tempoBpm: songs.tempoBpm })
+    .from(songs)
+    .orderBy(desc(songs.createdAt));
+
+  // ?song= is a soft UI preference, not a resource identifier -- an invalid or stale
+  // id silently falls back to the most recent song instead of 404ing (deliberately
+  // different from the retired v0.1 UI's hard notFound(), see archive/v0.1-web-ui/).
+  const { song: raw } = await searchParams;
+  const requested = Array.isArray(raw) ? raw[0] : raw;
+  const selectedId = requested && list.some((s) => s.id === requested) ? requested : (list[0]?.id ?? null);
+
+  const [fullSong] = selectedId ? await db.select().from(songs).where(eq(songs.id, selectedId)) : [];
+
+  // Optional real cover art -- returns null instantly (no network call) with no
+  // Spotify credentials configured, so this is a no-op today. See app/lib/spotify.ts.
+  const spotify = fullSong ? await getTrackMetadata(fullSong.title, fullSong.artist) : null;
+
+  // Same lookup, once per row, for the sidebar thumbnails -- parallelized since
+  // each is an independent network call. No-op (all nulls, no requests) with
+  // no Spotify credentials configured, same as the header lookup above.
+  const listWithArt = await Promise.all(
+    list.map(async (song) => ({ ...song, coverArtUrl: (await getTrackMetadata(song.title, song.artist))?.coverArtUrl })),
+  );
+
   return (
-    <div className="flex flex-col flex-1 items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex flex-1 w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert h-5 w-[100px]"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
+    <StudioShell
+      sidebar={<SongListSidebar songs={listWithArt} selectedId={selectedId} />}
+      detail={
+        <SongDetailPane
+          song={fullSong ?? null}
+          coverArtUrl={spotify?.coverArtUrl}
+          spotifyArtist={spotify?.artist}
+          spotifyUrl={spotify?.url}
         />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the{" "}
-            <code className="rounded bg-black/[.06] px-1.5 py-0.5 font-mono text-[0.9em] dark:bg-white/[.08]">
-              page.tsx
-            </code>{" "}
-            file.
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
-          </p>
-        </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert h-[14px] w-4"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={14}
-            />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
-        </div>
-      </main>
-    </div>
+      }
+    />
   );
 }
