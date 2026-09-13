@@ -34,4 +34,14 @@ jobs:
         with:
           node-version-file: ".nvmrc"
       - run: npm ci
-      - run: npm run verify:full
+      # Dependabot-triggered runs don't get secrets.* (GitHub Actions
+      # security restriction, not a bug) -- the production build needs
+      # TURSO_DATABASE_URL and would fail on that alone. typecheck+lint+test
+      # need no secrets and already catch real breakage on their own.
+      - name: Verify
+        run: |
+          if [ "${{ github.actor }}" = "dependabot[bot]" ]; then
+            npm run verify
+          else
+            npm run verify:full
+          fi

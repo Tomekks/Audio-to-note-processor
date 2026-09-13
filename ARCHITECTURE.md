@@ -56,7 +56,13 @@ exist. Needs `TURSO_DATABASE_URL`/`TURSO_AUTH_TOKEN` set as repo secrets
 (Settings → Secrets and variables → Actions) — without them the build fails
 at "Collecting page data" (the `/` route touches the DB at build-analysis
 time). `.github/dependabot.yml` keeps npm and Actions dependencies current
-via automated weekly PRs.
+via automated weekly PRs, with `ignore`/`groups` rules for known-broken or
+peer-linked bumps (typescript/eslint majors, react+react-dom together).
+Dependabot-triggered CI runs get the lighter `verify` (no build) instead of
+`verify:full` — GitHub doesn't expose secrets to them, so the DB-dependent
+build can't run there regardless. A dependency-bump PR still needs a human
+to run `npm run build` locally before merging — a deliberate, acknowledged
+trade-off, not a silent gap.
 
 ## Environment variables
 

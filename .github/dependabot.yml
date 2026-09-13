@@ -4,6 +4,22 @@ updates:
     directory: "/"
     schedule:
       interval: "weekly"
+    ignore:
+      # eslint-config-next's bundled typescript-eslint doesn't support
+      # TS 7.x yet; eslint-plugin-react breaks under ESLint 10 today. Both
+      # confirmed by real failed CI runs, not speculation -- remove once
+      # upstream compatibility is confirmed.
+      - dependency-name: "typescript"
+        update-types: ["version-update:semver-major"]
+      - dependency-name: "eslint"
+        update-types: ["version-update:semver-major"]
+    groups:
+      # react and react-dom are peer-dependency-linked -- bumping only one
+      # fails `npm ci`'s peer resolution. Keep them in lockstep.
+      react:
+        patterns:
+          - "react"
+          - "react-dom"
   - package-ecosystem: "github-actions"
     directory: "/"
     schedule:
