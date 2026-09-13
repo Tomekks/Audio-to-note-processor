@@ -52,7 +52,56 @@ future pipeline/Control Center changes don't trigger it. Deliberately
 excluded: the full audio pipeline (heavy ML dependencies, not CI-friendly)
 and any deploy step (Vercel deploys stay manual). `pipeline/` and
 `control-center/` will get their own path-filtered workflows once they
-exist.
+exist. Needs `TURSO_DATABASE_URL`/`TURSO_AUTH_TOKEN` set as repo secrets
+(Settings → Secrets and variables → Actions) — without them the build fails
+at "Collecting page data" (the `/` route touches the DB at build-analysis
+time). `.github/dependabot.yml` keeps npm and Actions dependencies current
+via automated weekly PRs.
+
+## Environment variables
+
+`src/db/client.ts` fails fast with a clear error if `TURSO_DATABASE_URL` or
+`TURSO_AUTH_TOKEN` is missing, instead of surfacing libsql's own cryptic
+"URL_INVALID" error several frames deeper — this is exactly the failure that
+first surfaced in CI before secrets were configured. See `.env.example` for
+what's needed.
+
+## Future structure: pipeline/ conventions (ICM Pipeline form)
+
+When `pipeline/` is built (Phase B), structure it as numbered stage folders,
+each with its own small `CONTEXT.md` contract — four fixed headings, every
+stage's copied from `pipeline/_templates/CONTEXT.md` rather than started
+blank, so the shape can't drift stage to stage:
+
+- `## Inputs` — exact paths, split working (this run) vs. reference (every run)
+- `## Process` — numbered, short; real detail lives in a linked reference
+  file, not inlined here
+- `## Outputs` — destination paths
+- `## Human Check` — exactly one explicit, checkable action (e.g. "listen to
+  `stems/other.wav` — does guitar come through recognizably"), not vague review
+
+**Token budget**: a stage's full context (its `CONTEXT.md` + any reference
+file it points to + its actual input) should land in the 2,000–8,000 token
+range — this bounds the documentation/reference footprint, not the raw
+audio/note data a stage processes. Expect variance: simple stages
+(`s01_ingest`, `s02_separate` — call a tool, write a file) sit near the low
+end; `s04_tab` (needs `tab.schema.json` plus guitar-logic conventions) will
+legitimately sit near the high end. If a stage's contract keeps growing past
+that, it's a signal the stage is doing more than one job, not a cue to
+compress the writing.
+
+**`scripts/verify-e2e.sh`** (the future formalized manual walkthrough)
+should `cat` each stage's `CONTEXT.md` when it reaches that stage rather
+than re-typing its Human Check instructions — one home per fact, not two
+copies that can drift. It should fail loudly, not silently, if a stage's
+`CONTEXT.md` is missing, so a renamed/reordered stage folder breaks visibly
+instead of silently skipping a check.
+
+**Walk test** — the one rule governing this file too, not a separate
+"when to split" heuristic: could a fresh session get oriented from ~2 reads,
+staying under ~8k tokens? `scripts/verify.sh` prints a note if this file
+crosses ~150 lines, as a mechanical nudge to actually ask that question
+rather than relying on remembering to.
 
 ## Anti-bloat rules
 
