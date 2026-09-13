@@ -11,6 +11,13 @@
     "moduleResolution": "bundler",
     "resolveJsonModule": true,
     "isolatedModules": true,
+    // Test files import their subject with an explicit .ts extension
+    // (e.g. "./validateTab.ts") because node --test's native ESM loader
+    // requires it -- Next's bundler resolves extensionless imports fine,
+    // but the two tools follow different resolution rules. Safe alongside
+    // noEmit: true (the sanctioned use case -- this repo's build path is
+    // Next's own bundler, never tsc emitting JS).
+    "allowImportingTsExtensions": true,
     "jsx": "react-jsx",
     "incremental": true,
     "plugins": [

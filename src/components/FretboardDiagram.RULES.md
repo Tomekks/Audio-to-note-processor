@@ -2,20 +2,18 @@
 
 Living rules for how each segment in the sequenced fretboard strip
 (`FretboardDiagram.tsx`) decides its own width and what it shows. Add to this
-over time as new cases come up — that's the point of this file existing
-separately from `app/STATUS.md`. Implementation lives in `app/lib/fretboard.ts`
+over time as new cases come up. Implementation lives in `src/lib/fretboard.ts`
 (pure, unit-tested in `fretboard.test.ts`), not in this file.
 
 ## Current rules
 
 1. **A segment's fret window is `FIXED_CELLS` (4) wide for the common case
-   (2026-09-10) — uniform, not tight-fit.** Reopened from the earlier
-   "exactly the fretted span, no padding" rule (see `docs/decisions/
-   display-modes.md` for the full history of both the original decision and
-   why it changed): a real, fresh reason — the jagged, differently-sized
-   segments read as messy next to Sheet/Ascii's consistent look, a bigger
-   cost for a beginner-facing product than the old rule's benefit (width
-   itself carrying a "how wide is this stretch" signal). A step whose actual
+   (2026-09-10) — uniform, not tight-fit.** Reopened from an earlier
+   "exactly the fretted span, no padding" rule: a real, fresh reason — the
+   jagged, differently-sized segments read as messy next to Sheet/Ascii's
+   consistent look, a bigger cost for a beginner-facing product than the old
+   rule's benefit (width itself carrying a "how wide is this stretch"
+   signal). A step whose actual
    span is already wider than `FIXED_CELLS` still shows its full width —
    real fret data is never truncated — so segments are uniform for the vast
    majority of steps, not literally every single one.
@@ -30,7 +28,8 @@ separately from `app/STATUS.md`. Implementation lives in `app/lib/fretboard.ts`
    markers were already unlabeled rings — unchanged.)
 4. **Simultaneous notes (same `startTimeSec` — a chord) are one segment,**
    never split into several, even though this file is about single-note
-   segments looking cleaner. See `docs/DECISIONS.md` for why.
+   segments looking cleaner — a chord is one played moment, and splitting it
+   across segments would misrepresent that as several sequential ones.
 5. **The thin-e/thick-E-on-top toggle applies to every segment at once,**
    not per-segment.
 6. **String lines step up in thickness like a real set** — e/B/G tied at

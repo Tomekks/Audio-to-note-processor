@@ -7,14 +7,20 @@
 // decide which notes are a chord (same value) vs separate steps -- see
 // SheetDiagram.RULES.md rule 2. `durationSec` is carried through from the
 // source data but deliberately unused by any rendering here (see
-// SheetDiagram.RULES.md's "not real musical notation" section).
+// SheetDiagram.RULES.md's "not real musical notation" section). Matches
+// contracts/tab.schema.json's notes[] shape -- durationSec is required
+// there (the pipeline always produces it) and technique is optional; kept
+// in sync here for contract parity even though nothing renders technique
+// yet (no view draws hammer-ons/slides/etc. -- YAGNI, not an oversight, and
+// groupNotesByStep below deliberately doesn't propagate it either).
 export type TimedNote = {
   // 0 = lowest (thickest) string -- tuning[string] is that string's open
   // pitch, and tuning[tuning.length - 1] is always the highest string.
   string: number;
   fret: number;
   startTimeSec: number;
-  durationSec?: number;
+  durationSec: number;
+  technique?: "hammer-on" | "pull-off" | "slide" | "bend" | "palm-mute";
 };
 
 const PITCH_CLASSES = ["C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B"];
@@ -121,7 +127,7 @@ export { fallbackStringNames };
 // SheetDiagram.RULES.md's "not real musical notation" section on why
 // duration isn't treated as authoritative anywhere else either).
 export function formatSongLength(notes: TimedNote[]): string {
-  const end = notes.reduce((max, n) => Math.max(max, n.startTimeSec + (n.durationSec ?? 0)), 0);
+  const end = notes.reduce((max, n) => Math.max(max, n.startTimeSec + n.durationSec), 0);
   const totalSeconds = Math.ceil(end);
   const minutes = Math.floor(totalSeconds / 60);
   const seconds = totalSeconds % 60;

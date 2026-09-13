@@ -2,10 +2,10 @@
 
 Living rules for `SheetDiagram.tsx`, the Songsterr-inspired tab-staff view.
 Add to this over time — same pattern as `FretboardDiagram.RULES.md`.
-Implementation lives in `app/lib/tabNotation.ts` (shared with the fretboard
+Implementation lives in `src/lib/tabNotation.ts` (shared with the fretboard
 view — grouping, naming, string thickness, and the responsive line-wrapping
 math) plus JSX/layout logic inline in the component itself. Playback timing
-lives separately again, in `app/hooks/useMetronome.ts` — see rule 8 below.
+lives separately again, in `src/hooks/useMetronome.ts` — see rule 8 below.
 
 ## What this deliberately is, and isn't (2026-09-09)
 
@@ -16,9 +16,9 @@ string), round shapes on the correct line, the fret number inside. Songsterr
 itself shows both a real notation staff *and* this kind of tab staff
 together — this only builds the tab-staff half, on purpose. Real notation
 would need accurate per-note duration to pick the right note-head/stem
-shapes, which `tab.schema.json`'s `durationSec` deliberately doesn't provide
-(see `docs/DECISIONS.md`'s Songsterr note) — building it would mean
-reopening that decision, not just adding a display mode.
+shapes, which the pipeline's `durationSec` is only ever an approximation of
+("time until the next note," not true note-off timing) — building it would
+mean reopening that data-accuracy decision, not just adding a display mode.
 
 ## Current rules
 
@@ -52,7 +52,7 @@ reopening that decision, not just adding a display mode.
    system) — matches how a real tempo marking appears once at the start of
    a piece, not repeated on every line.
 6. **Colors come from the real design-system tokens**
-   (`var(--background)`/`var(--foreground)` from `app/app/globals.css`), not
+   (`var(--background)`/`var(--foreground)` from `src/app/globals.css`), not
    hardcoded. `FretboardDiagram` now does too (2026-09-10) — this was the
    first component to, and the reference the retrofit followed.
 7. **String lines step up in thickness like a real set** — e/B/G tied at
@@ -63,10 +63,11 @@ reopening that decision, not just adding a display mode.
    given a non-null value, draws a dashed vertical line at that step across
    whichever system it falls in, and inverts that step's note circles
    (background/foreground swapped) so the active notes visibly pop. The
-   component has zero timing logic of its own — see `app/hooks/useMetronome.ts`
-   and the "Metronome" note in `docs/DECISIONS.md` for why that's a separate,
-   independent module. No playhead is drawn until the metronome has actually
-   been started at least once (`currentStep` is `null` until then), so the
+   component has zero timing logic of its own — see `src/hooks/useMetronome.ts`,
+   kept as a separate, independent module so playback timing and rendering
+   can change without touching each other. No playhead is drawn until the
+   metronome has actually been started at least once (`currentStep` is
+   `null` until then), so the
    view doesn't show a cursor before anyone's pressed play.
 9. **Manual step navigation (2026-09-10), owned by `useMetronome`, driven
    from `StudioTabs.tsx`, not this component.** Left/right arrow keys call
@@ -92,8 +93,7 @@ reopening that decision, not just adding a display mode.
 - **Rhythm/timing-proportional spacing.** Steps are spaced evenly regardless
   of actual time between them. A held note and a quick run currently look
   the same width apart. The metronome doesn't change this — it deliberately
-  advances one step per beat, not synced to real note timing either (see
-  `docs/DECISIONS.md`'s Metronome note).
+  advances one step per beat, not synced to real note timing either.
 - **Technique markers** (hammer-on, pull-off, slide, bend, palm-mute) —
   `tab.schema.json`'s `technique` field already carries this data; nothing
   reads it yet, in Sheet or the ASCII tab.

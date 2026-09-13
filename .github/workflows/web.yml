@@ -1,0 +1,37 @@
+name: web
+
+on:
+  push:
+    paths:
+      - "src/**"
+      - "package.json"
+      - "package-lock.json"
+      - "contracts/**"
+      - "drizzle/**"
+      - ".nvmrc"
+      - "scripts/**"
+      - ".github/workflows/web.yml"
+  pull_request:
+    paths:
+      - "src/**"
+      - "package.json"
+      - "package-lock.json"
+      - "contracts/**"
+      - "drizzle/**"
+      - ".nvmrc"
+      - "scripts/**"
+      - ".github/workflows/web.yml"
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    env:
+      TURSO_DATABASE_URL: ${{ secrets.TURSO_DATABASE_URL }}
+      TURSO_AUTH_TOKEN: ${{ secrets.TURSO_AUTH_TOKEN }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: ".nvmrc"
+      - run: npm ci
+      - run: npm run verify:full

@@ -1,4 +1,4 @@
-import { fallbackStringNames, groupNotesByStep, type TimedNote } from "./tabNotation";
+import { fallbackStringNames, groupNotesByStep, type TimedNote } from "./tabNotation.ts";
 
 const CELL_WIDTH = 3; // e.g. "-3-" or "-12" -- wide enough for two-digit frets
 
