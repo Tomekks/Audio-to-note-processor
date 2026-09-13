@@ -34,3 +34,14 @@ test("globals.css imports tokens.css and no longer declares the migrated tokens 
     assert.ok(!contents.includes(declaration), `globals.css should no longer directly declare ${declaration}`);
   }
 });
+
+test("the toggle component tier stays wired to its consumer", () => {
+  const tokens = readFileSync(tokensPath, "utf8");
+  const toggle = readFileSync(join(import.meta.dirname, "..", "components", "StringOrientationToggle.tsx"), "utf8");
+  assert.ok(tokens.includes(".dsys-toggle"), "tokens.css should define the component tier class");
+  assert.ok(toggle.includes("dsys-toggle"), "the component should carry the component-tier class");
+  for (const v of ["--toggle-radius", "--toggle-border-color"]) {
+    assert.ok(tokens.includes(`${v}:`), `tokens.css should define ${v}`);
+    assert.ok(toggle.includes(`var(${v})`), `the component should read ${v}`);
+  }
+});

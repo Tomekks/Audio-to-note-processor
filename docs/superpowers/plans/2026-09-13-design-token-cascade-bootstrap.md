@@ -308,7 +308,7 @@ Then in a browser:
 
 - [ ] **Step 5: Run the full check including a production build**
 
-Run: `npm run verify --full`
+Run: `npm run verify:full`
 Expected: PASS, including the production build — confirms the new
 `@import` resolves correctly outside of dev mode too, not just under
 `next dev`.
@@ -331,7 +331,7 @@ git commit -m "feat: migrate StringOrientationToggle onto the token cascade's co
 - `StringOrientationToggle` reads its radius and border color from the
   cascade, resolving to the app's actual shared values (12px radius,
   `#e6dfd8` border) instead of its previous one-off values.
-- `npm run verify --full` passes.
+- `npm run verify:full` passes.
 - The pending `/studio` deletion is committed; `git status` is clean.
 - This closes Phase 0 of the spec. Phase 1 (the local dev-only
   design-system tool) is a separate plan, written once this one is done

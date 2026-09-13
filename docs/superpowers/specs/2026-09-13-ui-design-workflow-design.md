@@ -283,3 +283,8 @@ judgment, user-scoped. Starts when there's enough real component coverage
   confidence from search alone; check directly inside Figma the first time
   a brand-swap-via-modes is attempted, and fall back to duplicate variable
   collections if modes are capped.
+- The brand palette is currently split across `globals.css`
+  (`--background`/`--foreground`/`[data-theme="light"]`) and
+  `src/styles/tokens.css` (`--color-accent`/`--color-border`) — deliberate,
+  not forgotten; Phase 1 should finish the migration when it builds the
+  theme switcher.

@@ -33,8 +33,9 @@ into the contract's shape first, same as `seed.ts` does).
 
 ## Commands
 
-- `npm test` — unit tests (`node --test`, no separate framework) for the
-  pure functions in `src/lib/`.
+- `npm test` — unit tests (`node --test`, no separate framework): the
+  pure functions in `src/lib/`, plus other unit-level checks like
+  `src/styles/tokens.test.ts`.
 - `npm run test:e2e` — one Playwright smoke test (`e2e/home.spec.ts`): loads
   the homepage, asserts zero console errors. First run needs
   `npx playwright install chromium` (one-time browser binary download). Not

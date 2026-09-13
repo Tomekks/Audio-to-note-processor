@@ -3,7 +3,16 @@
    unchanged, now organized so a tier can be extended without
    restructuring the ones below it. See
    docs/superpowers/specs/2026-09-13-ui-design-workflow-design.md for the
-   full design. */
+   full design.
+
+   Deliberately NOT migrated here yet: --background, --foreground, and
+   the [data-theme="light"] override, which still live in globals.css.
+   This is Phase 0 scope only, not an oversight -- Phase 1 (the local
+   design-system tool) should move them when it builds the theme
+   switcher that would drive them.
+
+   Component-tier classes use a `dsys-` prefix (e.g. .dsys-toggle) --
+   follow that convention for new ones rather than inventing another. */
 
 :root {
   /* Global tier: values with no brand identity of their own. */
