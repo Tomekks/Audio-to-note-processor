@@ -1,17 +1,17 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { StringOrientationToggle } from "@/components/StringOrientationToggle";
 import { TOKEN_FIELDS } from "./tokenFields";
 
-function readCurrentValues(): Record<string, string> {
-  const rootStyle = getComputedStyle(document.documentElement);
-  const toggleElement = document.querySelector(".dsys-toggle");
-  const toggleStyle = toggleElement ? getComputedStyle(toggleElement) : null;
+const TOKENS_API_URL = "/dev/design-system/api/tokens";
+
+async function fetchTokenValues(): Promise<Record<string, string>> {
+  const response = await fetch(TOKENS_API_URL);
+  const body = (await response.json()) as Record<string, string | undefined>;
   const values: Record<string, string> = {};
   for (const field of TOKEN_FIELDS) {
-    const style = field.tier === "component" && toggleStyle ? toggleStyle : rootStyle;
-    values[field.property] = style.getPropertyValue(field.property).trim();
+    values[field.property] = body[field.property] ?? "";
   }
   return values;
 }
@@ -20,13 +20,23 @@ export function DesignSystemTool() {
   const [values, setValues] = useState<Record<string, string>>({});
   const [theme, setTheme] = useState<"system" | "light" | "dark">("system");
   const [highOnTop, setHighOnTop] = useState(false);
+  // The value each field had the last time it was synced from the server --
+  // used to skip PATCHing a field that was clicked into and out of without
+  // actually being edited (computed-vs-authored / untouched-field bug).
+  const baselineRef = useRef<Record<string, string>>({});
 
   useEffect(() => {
-    // One-time sync from an external system (the DOM's computed CSS values)
-    // into React state on mount -- getComputedStyle is only available
-    // client-side, so this can't be a useState initializer.
-    // eslint-disable-next-line react-hooks/set-state-in-effect
-    setValues(readCurrentValues());
+    // One-time sync from an external system (the real, authored contents of
+    // tokens.css, via the GET endpoint) into React state on mount -- fetch
+    // is only meaningfully kicked off client-side here, so this can't be a
+    // useState initializer. The state update happens inside the .then()
+    // callback, not synchronously in the effect body, so this doesn't need
+    // the set-state-in-effect lint exception the old getComputedStyle
+    // version required.
+    fetchTokenValues().then((fetched) => {
+      baselineRef.current = fetched;
+      setValues(fetched);
+    });
   }, []);
 
   useEffect(() => {
@@ -52,16 +62,34 @@ export function DesignSystemTool() {
   }
 
   async function handleFieldCommit(property: string, value: string) {
-    await fetch("/dev/design-system/api/tokens", {
-      method: "PATCH",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ property, value }),
-    });
+    // Skip the write entirely if nothing actually changed from the last
+    // known-real value -- this is what stops clicking into and out of an
+    // untouched field from ever writing anything, regardless of what value
+    // domain (authored vs. computed) it happened to display.
+    if (baselineRef.current[property] === value) {
+      return;
+    }
+    try {
+      await fetch(TOKENS_API_URL, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ property, value }),
+      });
+    } finally {
+      // Re-fetch regardless of success or failure -- a rejected edit (e.g.
+      // a 400) should visibly snap the field back to the real persisted
+      // value instead of leaving the rejected input on screen.
+      const fetched = await fetchTokenValues();
+      baselineRef.current = fetched;
+      setValues(fetched);
+    }
   }
 
   async function handleReset() {
     await fetch("/dev/design-system/api/tokens/reset", { method: "POST" });
-    setValues(readCurrentValues());
+    const fetched = await fetchTokenValues();
+    baselineRef.current = fetched;
+    setValues(fetched);
   }
 
   return (

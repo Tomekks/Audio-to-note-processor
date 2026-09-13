@@ -39,7 +39,8 @@
 
 /* Brand tier, explicit theme overrides -- either one wins over the OS
    preference above regardless of it, since these come later in the
-   cascade and match on a strictly narrower selector. */
+   cascade (source order alone decides here -- the selectors are equal
+   specificity). */
 [data-theme="dark"] {
   --background: #0a0a0a;
   --foreground: #ededed;

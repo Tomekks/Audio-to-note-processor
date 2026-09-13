@@ -44,6 +44,8 @@ into the contract's shape first, same as `seed.ts` does).
 - `npm run verify:full` — the same, plus a production build. What CI runs.
 - `npm run db:seed` — inserts one sample song into the real Turso DB
   (validated against `tab.schema.json` first).
+- `/dev/design-system` — `next dev`-only route for live-editing the token
+  cascade (`src/styles/tokens.css`) against the real UI; 404s outside development.
 
 ## CI
 

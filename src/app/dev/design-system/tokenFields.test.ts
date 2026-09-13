@@ -8,8 +8,6 @@ test("TOKEN_FIELDS matches the spec's allow-list exactly", () => {
     { property: "--sidebar-width", tier: "global", kind: "size" },
     { property: "--color-accent", tier: "brand", kind: "color" },
     { property: "--color-border", tier: "brand", kind: "color" },
-    { property: "--background", tier: "brand", kind: "color" },
-    { property: "--foreground", tier: "brand", kind: "color" },
     { property: "--toggle-radius", tier: "component", kind: "size" },
     { property: "--toggle-border-color", tier: "component", kind: "color" },
   ];

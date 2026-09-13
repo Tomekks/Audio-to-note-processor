@@ -3,11 +3,24 @@ import { notFound } from "next/navigation";
 import { readFileSync, writeFileSync } from "node:fs";
 import path from "node:path";
 import { TOKEN_FIELDS } from "../../tokenFields";
-import { isValidValue, setTokenValue } from "../../tokenCss";
+import { getTokenValue, isValidValue, setTokenValue } from "../../tokenCss";
 
 const TOKENS_CSS_PATH = path.join(process.cwd(), "src", "styles", "tokens.css");
 
 type EditRequestBody = { property?: unknown; value?: unknown };
+
+export async function GET() {
+  if (process.env.NODE_ENV !== "development") {
+    notFound();
+  }
+
+  const cssText = readFileSync(TOKENS_CSS_PATH, "utf8");
+  const values: Record<string, string | undefined> = {};
+  for (const field of TOKEN_FIELDS) {
+    values[field.property] = getTokenValue(cssText, field.property);
+  }
+  return NextResponse.json(values);
+}
 
 export async function PATCH(request: Request) {
   if (process.env.NODE_ENV !== "development") {
@@ -27,9 +40,9 @@ export async function PATCH(request: Request) {
     return NextResponse.json({ error: "invalid property or value" }, { status: 400 });
   }
 
-  const cssText = readFileSync(TOKENS_CSS_PATH, "utf8");
   let updated: string;
   try {
+    const cssText = readFileSync(TOKENS_CSS_PATH, "utf8");
     updated = setTokenValue(cssText, property, value);
   } catch (error) {
     return NextResponse.json({ error: (error as Error).message }, { status: 500 });

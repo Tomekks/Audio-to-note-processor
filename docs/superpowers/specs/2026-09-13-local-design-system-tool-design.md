@@ -119,14 +119,19 @@ questions (when does it refresh?) that git doesn't have.
 | `--sidebar-width` | global | size |
 | `--color-accent` | brand | color |
 | `--color-border` | brand | color |
-| `--background` | brand | color |
-| `--foreground` | brand | color |
 | `--toggle-radius` | component | size |
 | `--toggle-border-color` | component | color |
 
 This same list drives both the API's allow-list and the page's editable
 fields — defined once (a shared const/type in one file both import), so a
 typo in either place is a compile error, not a silent runtime mismatch.
+
+`--background` and `--foreground` are deliberately not in this list: each
+has four theme-scoped declarations (`:root`, the `prefers-color-scheme:
+dark` media query, `[data-theme="dark"]`, `[data-theme="light"]`), and this
+tool's single-row read/write/reset model can only ever reach the first one
+of those. Theme-scoped editing is deferred rather than built speculatively;
+these two properties stay editable only by hand.
 
 ### Palette migration
 
@@ -141,8 +146,11 @@ Tailwind aliasing and the `body` rule.
 
 Renders the real `StringOrientationToggle` (both its states, toggleable),
 with one labeled input per row of the table above, a light/dark switcher
-(sets a `data-theme` attribute on the preview wrapper client-side — this is
-a preview-only control, never written to disk), and one Reset button.
+(sets a `data-theme` attribute on `document.documentElement` client-side,
+via a `useEffect` with cleanup on unmount/change — `<body>` is the ancestor
+that actually paints background/color, and a descendant-scoped attribute
+could never reach it; this is a preview-only control, never written to
+disk), and one Reset button.
 Editing a field calls the `PATCH` endpoint; Next's file watcher picks up the
 resulting `tokens.css` change and hot-reloads every open tab of the app,
 not just this page.

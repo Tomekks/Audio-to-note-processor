@@ -5,7 +5,7 @@
 // the API accepts.
 //
 // See docs/superpowers/specs/2026-09-13-local-design-system-tool-design.md
-// ("Token fields (the allow-list)") for why exactly these eight.
+// ("Token fields (the allow-list)") for why exactly these.
 
 export type TokenTier = "global" | "brand" | "component";
 export type TokenKind = "color" | "size";
@@ -21,8 +21,6 @@ export const TOKEN_FIELDS: TokenField[] = [
   { property: "--sidebar-width", tier: "global", kind: "size" },
   { property: "--color-accent", tier: "brand", kind: "color" },
   { property: "--color-border", tier: "brand", kind: "color" },
-  { property: "--background", tier: "brand", kind: "color" },
-  { property: "--foreground", tier: "brand", kind: "color" },
   { property: "--toggle-radius", tier: "component", kind: "size" },
   { property: "--toggle-border-color", tier: "component", kind: "color" },
 ];

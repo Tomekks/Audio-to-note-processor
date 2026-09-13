@@ -1,6 +1,6 @@
 import { TOKEN_FIELDS, type TokenField } from "./tokenFields.ts";
 
-const COLOR_PATTERN = /^#[0-9a-fA-F]{3,8}$/;
+const COLOR_PATTERN = /^#(?:[0-9a-fA-F]{3}|[0-9a-fA-F]{4}|[0-9a-fA-F]{6}|[0-9a-fA-F]{8})$/;
 const SIZE_PATTERN = /^\d+(\.\d+)?px$/;
 
 // Validates a value's shape against its token's kind -- a real trust
