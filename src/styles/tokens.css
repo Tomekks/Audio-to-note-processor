@@ -1,0 +1,20 @@
+/* Design-system token cascade: global -> brand -> component -> instance.
+   Migrated from globals.css's former flat block (2026-09-13) -- values
+   unchanged, now organized so a tier can be extended without
+   restructuring the ones below it. See
+   docs/superpowers/specs/2026-09-13-ui-design-workflow-design.md for the
+   full design. */
+
+:root {
+  /* Global tier: values with no brand identity of their own. */
+  --radius: 12px;
+  --sidebar-width: 280px;
+
+  /* Brand tier ("default", the only brand today). Kept at :root rather
+     than under a `[data-brand="default"]` selector because there is
+     nothing to select between yet -- promote this block to that selector
+     (and add the attribute to the app shell) the moment a second brand
+     exists. Do not add the attribute speculatively before then. */
+  --color-accent: #cc785c;
+  --color-border: #e6dfd8;
+}
