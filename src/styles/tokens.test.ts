@@ -14,6 +14,22 @@ test("tokens.css exists and defines the migrated design tokens", () => {
     "--sidebar-width: 280px",
     "--color-accent: #cc785c",
     "--color-border: #e6dfd8",
+    "--background: #ffffff",
+    "--foreground: #171717",
+  ]) {
+    assert.ok(contents.includes(declaration), `tokens.css should declare ${declaration}`);
+  }
+});
+
+test("tokens.css defines explicit dark and light theme overrides", () => {
+  const contents = readFileSync(tokensPath, "utf8");
+  assert.ok(contents.includes('[data-theme="dark"]'), 'tokens.css should define a [data-theme="dark"] override');
+  assert.ok(contents.includes('[data-theme="light"]'), 'tokens.css should define a [data-theme="light"] override');
+  for (const declaration of [
+    "--background: #0a0a0a",
+    "--foreground: #ededed",
+    "--background: #faf9f5",
+    "--foreground: #141413",
   ]) {
     assert.ok(contents.includes(declaration), `tokens.css should declare ${declaration}`);
   }
@@ -30,9 +46,12 @@ test("globals.css imports tokens.css and no longer declares the migrated tokens 
     "--sidebar-width:",
     "--color-accent: #cc785c",
     "--color-border: #e6dfd8",
+    "--background: #ffffff",
+    "--foreground: #171717",
   ]) {
     assert.ok(!contents.includes(declaration), `globals.css should no longer directly declare ${declaration}`);
   }
+  assert.ok(!contents.includes('[data-theme="light"]'), "globals.css should no longer declare the light theme override");
 });
 
 test("the toggle component tier stays wired to its consumer", () => {

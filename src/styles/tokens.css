@@ -5,11 +5,9 @@
    docs/superpowers/specs/2026-09-13-ui-design-workflow-design.md for the
    full design.
 
-   Deliberately NOT migrated here yet: --background, --foreground, and
-   the [data-theme="light"] override, which still live in globals.css.
-   This is Phase 0 scope only, not an oversight -- Phase 1 (the local
-   design-system tool) should move them when it builds the theme
-   switcher that would drive them.
+   Brand tier's --background/--foreground and theme overrides joined this
+   file 2026-09-13 too (Phase 1) -- previously left in globals.css on
+   purpose until the local design-system tool needed them.
 
    Component-tier classes use a `dsys-` prefix (e.g. .dsys-toggle) --
    follow that convention for new ones rather than inventing another. */
@@ -26,6 +24,30 @@
      exists. Do not add the attribute speculatively before then. */
   --color-accent: #cc785c;
   --color-border: #e6dfd8;
+  --background: #ffffff;
+  --foreground: #171717;
+}
+
+/* Brand tier, dark mode default: applies when the OS prefers dark and no
+   explicit [data-theme] override below matches. */
+@media (prefers-color-scheme: dark) {
+  :root {
+    --background: #0a0a0a;
+    --foreground: #ededed;
+  }
+}
+
+/* Brand tier, explicit theme overrides -- either one wins over the OS
+   preference above regardless of it, since these come later in the
+   cascade and match on a strictly narrower selector. */
+[data-theme="dark"] {
+  --background: #0a0a0a;
+  --foreground: #ededed;
+}
+
+[data-theme="light"] {
+  --background: #faf9f5;
+  --foreground: #141413;
 }
 
 /* Component tier: StringOrientationToggle (shared by FretboardDiagram and
