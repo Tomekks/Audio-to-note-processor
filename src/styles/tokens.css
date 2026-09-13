@@ -18,3 +18,11 @@
   --color-accent: #cc785c;
   --color-border: #e6dfd8;
 }
+
+/* Component tier: StringOrientationToggle (shared by FretboardDiagram and
+   SheetDiagram). Reset = delete this block; values fall back to the
+   tiers above. */
+.dsys-toggle {
+  --toggle-radius: var(--radius);
+  --toggle-border-color: var(--color-border);
+}
