@@ -2,7 +2,7 @@
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
-**Goal:** Build a dev-only `/design-system` route that renders the real
+**Goal:** Build a dev-only `/dev/design-system` route that renders the real
 `StringOrientationToggle` live, lets you edit its token cascade values in
 place (writing straight to `src/styles/tokens.css`), and reset those edits
 back to whatever's currently committed — replacing the disconnected static
@@ -27,7 +27,7 @@ not define these tokens' values, `tokens.css` does.
 
 ## Global Constraints
 
-- Route lives at `/design-system` (`src/app/design-system/`). Both the page
+- Route lives at `/dev/design-system` (`src/app/dev/design-system/`). Both the page
   and every Route Handler under it check
   `process.env.NODE_ENV !== "development"` independently and call
   `notFound()` if so — confirmed via
@@ -273,10 +273,10 @@ git commit -m "feat: migrate background/foreground theme tokens into the cascade
 ### Task 2: Token allow-list and pure CSS-editing functions
 
 **Files:**
-- Create: `src/app/design-system/tokenFields.ts`
-- Create: `src/app/design-system/tokenFields.test.ts`
-- Create: `src/app/design-system/tokenCss.ts`
-- Create: `src/app/design-system/tokenCss.test.ts`
+- Create: `src/app/dev/design-system/tokenFields.ts`
+- Create: `src/app/dev/design-system/tokenFields.test.ts`
+- Create: `src/app/dev/design-system/tokenCss.ts`
+- Create: `src/app/dev/design-system/tokenCss.test.ts`
 
 **Interfaces:**
 - Consumes: nothing new — operates on plain CSS text (fixture strings in
@@ -293,7 +293,7 @@ git commit -m "feat: migrate background/foreground theme tokens into the cascade
 
 - [ ] **Step 1: Write the failing test for the allow-list**
 
-Create `src/app/design-system/tokenFields.test.ts`:
+Create `src/app/dev/design-system/tokenFields.test.ts`:
 
 ```typescript
 import test from "node:test";
@@ -317,13 +317,13 @@ test("TOKEN_FIELDS matches the spec's allow-list exactly", () => {
 
 - [ ] **Step 2: Run it to verify it fails**
 
-Run: `node --test src/app/design-system/tokenFields.test.ts`
+Run: `node --test src/app/dev/design-system/tokenFields.test.ts`
 Expected: FAIL — `./tokenFields` does not exist yet.
 
-- [ ] **Step 3: Create `src/app/design-system/tokenFields.ts`**
+- [ ] **Step 3: Create `src/app/dev/design-system/tokenFields.ts`**
 
 ```typescript
-// Single source of truth for which design tokens the /design-system tool
+// Single source of truth for which design tokens the /dev/design-system tool
 // can edit -- both the API routes' validation allow-list and the page's
 // editable fields read from this same array, so a typo in one place is a
 // compile error, not a silent mismatch between what the UI shows and what
@@ -355,12 +355,12 @@ export const TOKEN_FIELDS: TokenField[] = [
 
 - [ ] **Step 4: Run it to verify it passes**
 
-Run: `node --test src/app/design-system/tokenFields.test.ts`
+Run: `node --test src/app/dev/design-system/tokenFields.test.ts`
 Expected: PASS.
 
 - [ ] **Step 5: Write the failing tests for the pure CSS functions**
 
-Create `src/app/design-system/tokenCss.test.ts`:
+Create `src/app/dev/design-system/tokenCss.test.ts`:
 
 ```typescript
 import test from "node:test";
@@ -431,10 +431,10 @@ test("resetTokenValues restores known properties to their committed values and l
 
 - [ ] **Step 6: Run it to verify it fails**
 
-Run: `node --test src/app/design-system/tokenCss.test.ts`
+Run: `node --test src/app/dev/design-system/tokenCss.test.ts`
 Expected: FAIL — `./tokenCss` does not exist yet.
 
-- [ ] **Step 7: Create `src/app/design-system/tokenCss.ts`**
+- [ ] **Step 7: Create `src/app/dev/design-system/tokenCss.ts`**
 
 ```typescript
 import { TOKEN_FIELDS, type TokenField } from "./tokenFields";
@@ -498,7 +498,7 @@ export function resetTokenValues(cssText: string, committedCssText: string): str
 
 - [ ] **Step 8: Run it to verify it passes**
 
-Run: `node --test src/app/design-system/tokenCss.test.ts`
+Run: `node --test src/app/dev/design-system/tokenCss.test.ts`
 Expected: PASS (all 7 tests).
 
 - [ ] **Step 9: Run verify**
@@ -510,7 +510,7 @@ pass.
 - [ ] **Step 10: Commit**
 
 ```bash
-git add src/app/design-system/tokenFields.ts src/app/design-system/tokenFields.test.ts src/app/design-system/tokenCss.ts src/app/design-system/tokenCss.test.ts
+git add src/app/dev/design-system/tokenFields.ts src/app/dev/design-system/tokenFields.test.ts src/app/dev/design-system/tokenCss.ts src/app/dev/design-system/tokenCss.test.ts
 git commit -m "feat: add design-token allow-list and pure CSS edit/reset functions"
 ```
 
@@ -519,13 +519,13 @@ git commit -m "feat: add design-token allow-list and pure CSS edit/reset functio
 ### Task 3: Token editing API route
 
 **Files:**
-- Create: `src/app/design-system/api/tokens/route.ts`
+- Create: `src/app/dev/design-system/api/tokens/route.ts`
 
 **Interfaces:**
 - Consumes: `TOKEN_FIELDS` from `../../tokenFields`; `isValidValue`,
   `setTokenValue` from `../../tokenCss` (both from Task 2).
-- Produces: a `PATCH` handler at `/design-system/api/tokens`. Task 5's page
-  calls it with `fetch("/design-system/api/tokens", { method: "PATCH", body: JSON.stringify({ property, value }) })`.
+- Produces: a `PATCH` handler at `/dev/design-system/api/tokens`. Task 5's page
+  calls it with `fetch("/dev/design-system/api/tokens", { method: "PATCH", body: JSON.stringify({ property, value }) })`.
 
 This task's route logic is a thin I/O wrapper around Task 2's already-unit-
 tested pure functions — per this repo's convention (see the Global
@@ -533,7 +533,7 @@ Constraints), it's verified manually rather than with an automated route
 test, since a real test would mean writing to the real `tokens.css` from
 the test suite.
 
-- [ ] **Step 1: Create `src/app/design-system/api/tokens/route.ts`**
+- [ ] **Step 1: Create `src/app/dev/design-system/api/tokens/route.ts`**
 
 ```typescript
 import { NextResponse } from "next/server";
@@ -592,7 +592,7 @@ npm run dev
 In another terminal:
 
 ```bash
-curl -i -X PATCH http://localhost:3000/design-system/api/tokens \
+curl -i -X PATCH http://localhost:3000/dev/design-system/api/tokens \
   -H "Content-Type: application/json" \
   -d '{"property": "--color-accent", "value": "#000000"}'
 ```
@@ -604,7 +604,7 @@ should have visibly changed after Next's hot reload picks up the file
 change.
 
 ```bash
-curl -i -X PATCH http://localhost:3000/design-system/api/tokens \
+curl -i -X PATCH http://localhost:3000/dev/design-system/api/tokens \
   -H "Content-Type: application/json" \
   -d '{"property": "--not-a-real-token", "value": "#000000"}'
 ```
@@ -612,7 +612,7 @@ curl -i -X PATCH http://localhost:3000/design-system/api/tokens \
 Expected: `400`.
 
 ```bash
-curl -i -X PATCH http://localhost:3000/design-system/api/tokens \
+curl -i -X PATCH http://localhost:3000/dev/design-system/api/tokens \
   -H "Content-Type: application/json" \
   -d '{"property": "--color-accent", "value": "not-a-color"}'
 ```
@@ -631,7 +631,7 @@ restore the working tree by hand so the commit below is clean.)
 - [ ] **Step 5: Commit**
 
 ```bash
-git add src/app/design-system/api/tokens/route.ts
+git add src/app/dev/design-system/api/tokens/route.ts
 git commit -m "feat: add the design-token editing API route"
 ```
 
@@ -640,15 +640,15 @@ git commit -m "feat: add the design-token editing API route"
 ### Task 4: Token reset API route
 
 **Files:**
-- Create: `src/app/design-system/api/tokens/reset/route.ts`
+- Create: `src/app/dev/design-system/api/tokens/reset/route.ts`
 
 **Interfaces:**
 - Consumes: `resetTokenValues` from `../../../tokenCss` (Task 2).
-- Produces: a `POST` handler at `/design-system/api/tokens/reset`, no
+- Produces: a `POST` handler at `/dev/design-system/api/tokens/reset`, no
   request body. Task 5's page calls it with
-  `fetch("/design-system/api/tokens/reset", { method: "POST" })`.
+  `fetch("/dev/design-system/api/tokens/reset", { method: "POST" })`.
 
-- [ ] **Step 1: Create `src/app/design-system/api/tokens/reset/route.ts`**
+- [ ] **Step 1: Create `src/app/dev/design-system/api/tokens/reset/route.ts`**
 
 ```typescript
 import { NextResponse } from "next/server";
@@ -690,14 +690,14 @@ Expected: PASS.
 With `npm run dev` still running:
 
 ```bash
-curl -s -X PATCH http://localhost:3000/design-system/api/tokens \
+curl -s -X PATCH http://localhost:3000/dev/design-system/api/tokens \
   -H "Content-Type: application/json" \
   -d '{"property": "--radius", "value": "40px"}' > /dev/null
 
 grep -- "--radius:" src/styles/tokens.css
 # Expect: --radius: 40px;
 
-curl -s -X POST http://localhost:3000/design-system/api/tokens/reset > /dev/null
+curl -s -X POST http://localhost:3000/dev/design-system/api/tokens/reset > /dev/null
 
 grep -- "--radius:" src/styles/tokens.css
 # Expect: --radius: 12px;  (back to the committed value)
@@ -709,26 +709,26 @@ git status --short src/styles/tokens.css
 - [ ] **Step 4: Commit**
 
 ```bash
-git add src/app/design-system/api/tokens/reset/route.ts
+git add src/app/dev/design-system/api/tokens/reset/route.ts
 git commit -m "feat: add the design-token reset API route"
 ```
 
 ---
 
-### Task 5: The `/design-system` page
+### Task 5: The `/dev/design-system` page
 
 **Files:**
-- Create: `src/app/design-system/page.tsx`
-- Create: `src/app/design-system/DesignSystemTool.tsx`
+- Create: `src/app/dev/design-system/page.tsx`
+- Create: `src/app/dev/design-system/DesignSystemTool.tsx`
 
 **Interfaces:**
 - Consumes: `TOKEN_FIELDS` from `./tokenFields` (Task 2);
   `StringOrientationToggle` from `@/components/StringOrientationToggle`
   (existing); the two API routes from Tasks 3–4.
-- Produces: the `/design-system` page itself — nothing later in this plan
+- Produces: the `/dev/design-system` page itself — nothing later in this plan
   consumes it.
 
-- [ ] **Step 1: Create `src/app/design-system/page.tsx`**
+- [ ] **Step 1: Create `src/app/dev/design-system/page.tsx`**
 
 ```typescript
 import { notFound } from "next/navigation";
@@ -743,7 +743,7 @@ export default function DesignSystemPage() {
 }
 ```
 
-- [ ] **Step 2: Create `src/app/design-system/DesignSystemTool.tsx`**
+- [ ] **Step 2: Create `src/app/dev/design-system/DesignSystemTool.tsx`**
 
 ```typescript
 "use client";
@@ -775,7 +775,7 @@ export function DesignSystemTool() {
   }
 
   async function handleFieldCommit(property: string, value: string) {
-    await fetch("/design-system/api/tokens", {
+    await fetch("/dev/design-system/api/tokens", {
       method: "PATCH",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ property, value }),
@@ -783,7 +783,7 @@ export function DesignSystemTool() {
   }
 
   async function handleReset() {
-    await fetch("/design-system/api/tokens/reset", { method: "POST" });
+    await fetch("/dev/design-system/api/tokens/reset", { method: "POST" });
     setValues(readCurrentValues());
   }
 
@@ -860,7 +860,7 @@ Expected: PASS.
 npm run dev
 ```
 
-1. Open `http://localhost:3000/design-system`. Confirm the page loads: a
+1. Open `http://localhost:3000/dev/design-system`. Confirm the page loads: a
    theme switcher, the real toggle button, one row per token field, and a
    "Reset all" button.
 2. Change the `--color-accent` field's input and click elsewhere (blur it).
@@ -886,10 +886,10 @@ npm run start
 In another terminal:
 
 ```bash
-curl -i http://localhost:3000/design-system
+curl -i http://localhost:3000/dev/design-system
 # Expect: 404
 
-curl -i -X PATCH http://localhost:3000/design-system/api/tokens \
+curl -i -X PATCH http://localhost:3000/dev/design-system/api/tokens \
   -H "Content-Type: application/json" -d '{"property":"--radius","value":"1px"}'
 # Expect: 404
 ```
@@ -899,8 +899,8 @@ Stop `npm run start` (Ctrl-C) once confirmed.
 - [ ] **Step 6: Commit**
 
 ```bash
-git add src/app/design-system/page.tsx src/app/design-system/DesignSystemTool.tsx
-git commit -m "feat: add the /design-system live token-editing page"
+git add src/app/dev/design-system/page.tsx src/app/dev/design-system/DesignSystemTool.tsx
+git commit -m "feat: add the /dev/design-system live token-editing page"
 ```
 
 ---
@@ -927,12 +927,12 @@ all succeed with `design_system/` gone.
 
 ```bash
 git add -A
-git commit -m "chore: delete design_system/index.html, replaced by the /design-system tool"
+git commit -m "chore: delete design_system/index.html, replaced by the /dev/design-system tool"
 ```
 
 ## Definition of done
 
-- `/design-system` renders `StringOrientationToggle` live, editable via the
+- `/dev/design-system` renders `StringOrientationToggle` live, editable via the
   8 fields in `TOKEN_FIELDS`, backed by real writes to `tokens.css`.
 - Editing a field updates the live app (not just the tool's own page) via
   hot reload.
@@ -941,7 +941,7 @@ git commit -m "chore: delete design_system/index.html, replaced by the /design-s
   Step 3, via `git status` showing a clean file afterward).
 - `--background`, `--foreground`, and the theme overrides live in
   `tokens.css`; `globals.css` no longer declares them directly.
-- Visiting `/design-system` (page or API) in a production build (`next
+- Visiting `/dev/design-system` (page or API) in a production build (`next
   build && next start`) returns a 404.
 - `design_system/index.html` is deleted.
 - `npm run verify:full` passes.

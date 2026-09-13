@@ -56,7 +56,7 @@ component, editable in place, writing directly to the real token file.
 
 ### Route & gating
 
-`src/app/design-system/page.tsx` — a Server Component. First line checks
+`src/app/dev/design-system/page.tsx` — a Server Component. First line checks
 `process.env.NODE_ENV !== 'development'` and calls `notFound()` if so. The
 API route below repeats the same check independently (defense in depth: the
 page and the API are two separate entry points, and either one being
@@ -64,7 +64,7 @@ reachable without the other guarded would defeat the purpose).
 
 ### Token editing
 
-One Route Handler, colocated at `src/app/design-system/api/tokens/route.ts`.
+One Route Handler, colocated at `src/app/dev/design-system/api/tokens/route.ts`.
 
 `PATCH` body: `{ property: string, value: string }`.
 
@@ -87,7 +87,7 @@ One Route Handler, colocated at `src/app/design-system/api/tokens/route.ts`.
 ### Reset
 
 One button, one `POST` to a dedicated sibling route,
-`src/app/design-system/api/tokens/reset/route.ts` — kept separate from the
+`src/app/dev/design-system/api/tokens/reset/route.ts` — kept separate from the
 edit endpoint rather than overloaded onto it, since the two have different
 request shapes (reset takes no body) and different trust-boundary checks
 (no `property`/`value` validation applies here). It does
@@ -158,7 +158,7 @@ test harness in this repo, by deliberate choice).
 
 ## Definition of done
 
-- `/design-system` renders `StringOrientationToggle` live, editable via the
+- `/dev/design-system` renders `StringOrientationToggle` live, editable via the
   fields in the table above, backed by real writes to `tokens.css`.
 - Editing a field updates the live app (not just the tool's own page) via
   hot reload.
@@ -166,7 +166,7 @@ test harness in this repo, by deliberate choice).
   value, and never touches any other line in the file.
 - `--background`, `--foreground`, and the theme overrides live in
   `tokens.css`; `globals.css` no longer declares them directly.
-- Visiting `/design-system` (page or API) in a production build (`next
+- Visiting `/dev/design-system` (page or API) in a production build (`next
   build && next start`) returns a 404.
 - `design_system/index.html` is deleted.
 - `npm run verify:full` passes.
